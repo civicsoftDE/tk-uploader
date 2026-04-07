@@ -1,2 +1,2 @@
 <?php
-echo password_hash('tk2026', PASSWORD_DEFAULT);
+echo password_hash('abcd', PASSWORD_DEFAULT);
