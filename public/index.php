@@ -86,13 +86,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <body class="bg-light">
 <div class="container py-5">
     <div class="row justify-content-center">
-        <div class="col-6 col-lg-5">
+        <div class="col-12 col-6 col-lg-5">
             <h1 class="h3">Beiträge zum Sommerfest</h1>
             <p class="lead">Beitrag einreichen</p>
         </div>
     </div>
     <div class="row justify-content-center">
-        <div class="col-md-6 col-lg-5">
+        <div class="col-12 col-md-6 col-lg-5">
             <div class="card shadow-sm">
                 <div class="card-body">
                     <?php if ($error): ?>
@@ -120,7 +120,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
     </div>
     <div class="row justify-content-center mt-3">
-        <div class="col-6 col-lg-5">
+        <div class="col-12 col-6 col-lg-5">
             <p class="text-muted">Mit Klick auf <strong>Hochladen</strong> erklärst du, dass du alle Rechte an dem Material hast und dieses im Rahmen des Sommerfests am Treptow-Kolleg Berlin gezeigt werden darf.</p>
             <p>Weitere Informationen zum Sommerfest findet im <a href="https://www.alumni-portal.org/veranstaltungen/details/abschluss-sommerfest-des-treptow-kollegs" target="_blank">Alumni-Portal</a>.</p>
         </div>
