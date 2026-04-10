@@ -2,6 +2,44 @@
 
 declare(strict_types=1);
 
+// START ENERGY LOGGING
+
+$start = microtime(true);
+$startMem = memory_get_usage();
+
+// ... dein eigentlicher Code ...
+
+// === MESSUNG ENDE + BERECHNUNG ===
+$duration = microtime(true) - $start;          // Sekunden
+$memoryDelta = memory_get_usage() - $startMem; // Bytes
+$bytesOut = ob_get_length() ?: 0;              // Bytes an Client
+
+// Umrechnung in CO₂e (kg) – Faktoren siehe oben
+$co2_cpu   = $duration * 0.000018;              // kg CO₂e
+$co2_ram   = ($memoryDelta / 1024 / 1024) * 0.00000004; // kg CO₂e
+$co2_data  = ($bytesOut / 1024 / 1024) * 0.000029;      // kg CO₂e
+
+$co2_total = $co2_cpu + $co2_ram + $co2_data;  // kg CO₂e pro Request
+
+// === LOGGEN (JSON Lines im /log-Ordner) ===
+$logDir = dirname(__DIR__) . '/log';
+if (!is_dir($logDir)) mkdir($logDir, 0777, true);
+
+$logEntry = [
+        'ts' => time(),
+        'co2_kg' => $co2_total,
+        'co2_mg' => round($co2_total * 1_000_000), // mg für bessere Lesbarkeit
+        'duration_ms' => round($duration * 1000, 2)
+];
+file_put_contents(
+        $logDir . '/co2.jsonl',
+        json_encode($logEntry) . PHP_EOL,
+        FILE_APPEND | LOCK_EX
+);
+
+
+// END ENERGY LOGGING
+
 const UPLOAD_PASSWORD_HASH = '$2y$12$KwAVHe1/.izjfUo/0JM8e.2mHUNVxfkzGezuFeFvQl5RrfGP6csoG';
 const UPLOAD_DIR = __DIR__ . '/../uploads/';
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
@@ -74,6 +112,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 }
+
+$lines = file($logDir . '/co2.jsonl', FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+$recent = array_slice($lines, -100);
+$avg_mg = array_sum(array_map(fn($l) => json_decode($l)->co2_mg, $recent)) / count($recent);
+
 ?>
 <!DOCTYPE html>
 <html lang="de">
@@ -123,6 +166,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <div class="col-12 col-6 col-lg-5">
             <p class="text-muted">Mit Klick auf <strong>Hochladen</strong> erklärst du, dass du alle Rechte an dem Material hast und dieses im Rahmen des Sommerfests am Treptow-Kolleg Berlin gezeigt werden darf.</p>
             <p>Weitere Informationen zum Sommerfest findet im <a href="https://www.alumni-portal.org/veranstaltungen/details/abschluss-sommerfest-des-treptow-kollegs" target="_blank">Alumni-Portal</a>.</p>
+        </div>
+    </div>
+    <div class="row justify-content-center mt-5">
+        <div class="col-12 col-6 col-lg-5">
+            <p class="text-muted fst-italic">
+                <?php
+                echo "Diese Seite verbraucht " . round($avg_mg) . " mg CO₂e (geschätzt)";
+                ?>
+            </p>
         </div>
     </div>
 </div>
